@@ -7,3 +7,7 @@ third one is for card date
 the last one for card cvv
 
 ArabaKiralama folder is about user save information. 
+
+araba_shb_md_araba_bilgileri folder has 3 pages 
+The first one is about getting the customer to place a car ad for renting
+The other pages for writing car informations and register the car to the system
