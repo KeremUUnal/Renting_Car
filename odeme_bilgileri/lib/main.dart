@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:odeme_bilgileri/odemeDeop.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:intl/intl.dart';
 
 void main() {
-  runApp(const OdemeBilgileri());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => odemeDeop(),
+      child: const OdemeBilgileri(),
+    ),
+  );
 }
 
 class OdemeBilgileri extends StatelessWidget {
@@ -35,6 +45,44 @@ class BilgiYaz extends StatefulWidget {
 }
 
 class _BilgiYazState extends State<BilgiYaz> {
+  Future<void> odemeData(
+      String kartIsim,
+      String kart_no,
+      DateTime son_kullanma_tarihi,
+      String cvv,
+      ) async {
+    try {
+      var url = Uri.parse(
+          'http://*****/odemebilgileri'); // API endpoint'i
+      var response = await http.post(
+        url,
+        body: {
+          'kartIsim': kartIsim,
+          'kart_no': kart_no,
+          'son_kullanma_tarihi': DateFormat('yyyy-MM-dd').format(son_kullanma_tarihi),
+          'cvv': cvv,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Başarılı yanıt
+        debugPrint('Veri başarıyla eklendi: ${response.body}');
+      } else {
+        // Hatalı yanıt
+        debugPrint('Hata: ${response.reasonPhrase}');
+      }
+    } catch (error) {
+      debugPrint('İstek sırasında bir hata oluştu: $error');
+    }
+  }
+
+  final _isimController = TextEditingController();
+  final _kartNoController = TextEditingController();
+  DateTime? sonKullanmaTarihi;
+  final _cvvController = TextEditingController();
   DateTime? _selectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
@@ -53,8 +101,8 @@ class _BilgiYazState extends State<BilgiYaz> {
 
   @override
   Widget build(BuildContext context) {
+    var odemeBlgProvider = Provider.of<odemeDeop>(context, listen: false);
     return Scaffold(
-
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -63,6 +111,7 @@ class _BilgiYazState extends State<BilgiYaz> {
               child: SizedBox(
                 height: 70,
                 child: TextFormField(
+                  controller: _isimController,
                   style: const TextStyle(fontSize: 20),
                   decoration: InputDecoration(
                     labelText: "Kartın Üstündeki İsim",
@@ -82,6 +131,7 @@ class _BilgiYazState extends State<BilgiYaz> {
               child: SizedBox(
                 height: 70,
                 child: TextFormField(
+                  controller: _kartNoController,
                   style: const TextStyle(fontSize: 20),
                   decoration: InputDecoration(
                     labelText: "Kart Numarası",
@@ -102,8 +152,6 @@ class _BilgiYazState extends State<BilgiYaz> {
             Row(
               children: [
                 Expanded(
-
-
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: TextFormField(
@@ -123,43 +171,43 @@ class _BilgiYazState extends State<BilgiYaz> {
                         ),
                       ),
                       keyboardType: TextInputType.datetime,
-                      maxLength: 3,
                       readOnly: true,
                       controller: TextEditingController(
                         text: _selectedDate == null
                             ? ''
                             : '${_selectedDate!.year}/${_selectedDate!.month}/${_selectedDate!.day}',
                       ),
-                      textDirection: TextDirection.rtl,
+                      textDirection: null,
+
                     ),
                   ),
                 ),
-                const SizedBox( width:12.0),
-
+                const SizedBox(width: 12.0),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(11.0),
                     child: TextFormField(
-                        style: const TextStyle(fontSize: 20),
-                        decoration: InputDecoration(
-                          labelText: "CVV",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: const BorderSide(
-                              color: Colors.blue,
-                              width: 2,
-                            ),
+                      controller: _cvvController,
+                      style: const TextStyle(fontSize: 20),
+                      decoration: InputDecoration(
+                        labelText: "CVV",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: const BorderSide(
+                            color: Colors.blue,
+                            width: 2,
                           ),
                         ),
-                        keyboardType: TextInputType.number,
-                        maxLength: 3,
-                        textAlign: TextAlign.end
+                      ),
+                      keyboardType: TextInputType.number,
+                      maxLength: 3,
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ),
               ],
             ),
-              const SizedBox(height: 35.0),
+            const SizedBox(height: 35.0),
             const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -182,15 +230,33 @@ class _BilgiYazState extends State<BilgiYaz> {
                 ),
               ],
             ),
-      const SizedBox(height: 30),
-      ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        ),
-        child: const Text('Kaydet'),
-      ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                if (_isimController.text.isNotEmpty &&
+                    _kartNoController.text.isNotEmpty &&
+                    sonKullanmaTarihi != null &&
+                    _cvvController.text.isNotEmpty) {
+                  odemeBlgProvider.kartIsim = _isimController.text;
+                  odemeBlgProvider.kartNo = _kartNoController.text;
+                  odemeBlgProvider.sonKullanmaTarihi = _selectedDate!;
+                  odemeBlgProvider.cvv = _cvvController.text;
+
+                  odemeData(
+                    odemeBlgProvider.kartIsim,
+                    odemeBlgProvider.kartNo,
+                    odemeBlgProvider.sonKullanmaTarihi!,
+                    odemeBlgProvider.cvv,
+                  );
+                }
+
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Kaydet'),
+            ),
           ],
         ),
       ),
