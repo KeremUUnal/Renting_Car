@@ -1,4 +1,4 @@
-import 'package:arabakiralama/kayit.dart';
+ import 'package:arabakiralama/kayit.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:arabakiralama/kayitdepo.dart';
