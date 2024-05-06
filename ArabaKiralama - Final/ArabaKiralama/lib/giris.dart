@@ -127,7 +127,7 @@ class _BilgiYazState extends State<BilgiYaz> {
   Future<void> kisiselGiris(String email) async {
     try {
       var url = Uri.parse(
-          'http://192.168.1.113:3000/kisiselbilgigirisi'); // API endpoint'i
+          'http://********/kisiselbilgigirisi'); // API endpoint'i
       var body = jsonEncode({
         'email': email,
       }); // Gönderilecek veri
@@ -196,7 +196,7 @@ class _BilgiYazState extends State<BilgiYaz> {
   Future<void> arabaGiris(String email) async {
     try {
       var url = Uri.parse(
-          'http://192.168.1.113:3000/arababilgigirisi'); // API endpoint'i
+          'http://*********/arababilgigirisi'); // API endpoint'i
       var body = jsonEncode({
         'email': email,
       }); // Gönderilecek veri
@@ -233,7 +233,7 @@ class _BilgiYazState extends State<BilgiYaz> {
   Future<Uint8List?> getArabaResim(String email) async {
     try {
       var url = Uri.parse(
-          'http://192.168.1.113:3000/arababilgigirisi'); // API endpoint'i
+          'http://********/arababilgigirisi'); // API endpoint'i
       var body = jsonEncode({
         'email': email,
       }); // Gönderilecek veri
